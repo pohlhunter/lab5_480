@@ -1,5 +1,4 @@
 import java.util.*;
-import java.util.Random;
 import javax.script.*;
 import java.io.*;
 
@@ -11,62 +10,93 @@ public class Lab5 {
       String equationEval = "";
       String equationMine = "";
       
+      long evalTime = 0;
+      long myTime = 0;
+      long generateTime = 0;
+      
       int correct = 0;
       
-      while (amount < 1) {
-         Scanner myObj = new Scanner(System.in);
-         System.out.println("Amount of equations: ");
-         amount = myObj.nextInt();
-      }
+      
+      Scanner sc = new Scanner(System.in);
+      boolean validInput = false;
+      while (validInput == false) {
+            System.out.print("Amount of equations. Enter a whole positive number:   ");
+            String input = sc.next();
+            int intInputValue = 0;
+            try {
+                intInputValue = Integer.parseInt(input);
+                if (intInputValue > 0) {
+                    validInput = true;
+                    amount = intInputValue;
+                }
+            } catch (NumberFormatException e) {
+            }
+        }
+      System.out.println();
+      
       
       for (int i = 0; i < amount; i++) {
+         long startTimeGen = System.currentTimeMillis();
          String[] equations = generateValid();
+         long endTimeGen = System.currentTimeMillis();
+         long durationGen = (endTimeGen - startTimeGen);  //milliseconds
+         generateTime += durationGen; // adding the time it took to do my calculator for a total time
+         
          equationEval = equations[0];
          equationMine = equations[1];
-         System.out.println("equation eval: " + equationEval);
-         System.out.println("equation mine: " + equationMine);
+//          System.out.println("equation eval: " + equationEval);
+//          System.out.println("equation mine: " + equationMine);
 
          String myResult = "";
          String oracleResult = "";
          
+         long startTimeMine = System.currentTimeMillis();
          try {
             String postfix = infixToPostfix(equationMine);
             myResult = evalRPN(postfix);
           } catch (Exception e) {
             myResult = "Error";
           }
+          long endTimeMine = System.currentTimeMillis();
+          long durationMine = (endTimeMine - startTimeMine);  //milliseconds
+          myTime += durationMine; // adding the time it took to do my calculator for a total time
           
-          //System.out.println("my result: " + myResult);
           
-          
+          long startTimeEval = System.currentTimeMillis();
           try {
             oracleResult = oracleEval(equationEval);
           } catch (Exception e) {
-            e.printStackTrace();
+            // e.printStackTrace();
             oracleResult = "Error";
           }
-          //System.out.println("oracle result: " + oracleResult);
-          
-          
-          // both start with E
+          long endTimeEval = System.currentTimeMillis();
+          long durationEval = (endTimeEval - startTimeEval);  //milliseconds
+          evalTime += durationEval; // adding the time it took to do oracle for a total oracle time
+
+          // both start with E (meaning Error)
           if (myResult.charAt(0) == 'E' || oracleResult.charAt(0) == 'E') {
             if (myResult.charAt(0) == 'E' && oracleResult.charAt(0) == 'E') {
                correct++;
             }
-            System.out.println("oracleResult:  " + oracleResult);
-            System.out.println("myResult:  " + myResult);
           }
           // both have same value
           else if (Double.parseDouble(myResult) == Double.parseDouble(oracleResult)) {
             correct++;
           }
           
-          //System.out.println();
-       }
-       System.out.println("Total amount: " + amount);
-       System.out.println("Amount of correct: " + correct);
+          
+          System.out.println("Expr " + (i + 1) + ": " + equationMine + ".    My eval: " + myResult + ".    Oracle eval: " + oracleResult);
+       } // end of loop
+       
+       System.out.println();
+       
        double percent = (100 * ((double)correct / (double)amount));
-       System.out.println("Percent correct: " + percent + "%");
+       System.out.println("Amount of expressions: " + amount + ". Amount of my caclulator correct: " + correct + ". Percent that my eval agreed with the Oracle: " + percent + "%");
+       
+       System.out.println();
+       System.out.println("Time for my calculator: " + myTime + " (milliseconds)");
+       System.out.println("Time for oracle calculator: " + evalTime + " (milliseconds) or " + (evalTime/1000) + " (seconds)");
+       System.out.println("Time to generate equations: " + generateTime + " (milliseconds)");
    }
 
 
@@ -461,7 +491,6 @@ public class Lab5 {
 
 
    static String oracleEval(String equation) throws Exception {
-            
       ScriptEngine nash = new ScriptEngineManager().getEngineByName("Nashorn");
       String strResult = String.valueOf(nash.eval(equation));
       return strResult;

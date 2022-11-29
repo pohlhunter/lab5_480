@@ -43,10 +43,13 @@ public class Lab5 {
          generateTime += durationGen; // adding the time it took to do my calculator for a total time
          
          equationEval = equations[0];
-         equationMine = equations[1];
+         equationMine = "0 + " + equations[1];
+         
+         // make string with no spaces. that uses the conventions of cos,sin,tan and not the one that is generated with Math.XXX()
+         String equationToPrint = equations[1].replaceAll("\\s", "");
 //          System.out.println("equation eval: " + equationEval);
 //          System.out.println("equation mine: " + equationMine);
-
+         
          String myResult = "";
          String oracleResult = "";
          
@@ -85,7 +88,7 @@ public class Lab5 {
           }
           
           
-          System.out.println("Expr " + (i + 1) + ": " + equationMine + ".    My eval: " + myResult + ".    Oracle eval: " + oracleResult);
+          System.out.println("Expr " + (i + 1) + ": " + equationToPrint + ".    My eval: " + myResult + ".    Oracle eval: " + oracleResult);
        } // end of loop
        
        System.out.println();
@@ -508,7 +511,6 @@ public class Lab5 {
        token in the ops string and divide by 2 (rounding down). 
        This will give us: 0, 0, 1, 1, 2 */
     final String ops = "-+/*^";
-
     StringBuilder sb = new StringBuilder();
     Stack < Integer > s = new Stack < > ();
 

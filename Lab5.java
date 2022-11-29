@@ -6,6 +6,10 @@ public class Lab5 {
 
   public static void main(String[] args) throws Exception {
       
+      //oracle
+      //must have jdk and jre of version 8
+      ScriptEngine nash = new ScriptEngineManager().getEngineByName("Nashorn");
+      
       int amount = 0;
       String equationEval = "";
       String equationMine = "";
@@ -77,7 +81,7 @@ public class Lab5 {
           
           long startTimeEval = System.currentTimeMillis();
           try {
-            oracleResult = oracleEval(equationEval);
+            oracleResult = String.valueOf(nash.eval(equationEval));
           } catch (Exception e) {
             // e.printStackTrace();
             oracleResult = "Error";
@@ -938,12 +942,6 @@ public class Lab5 {
 
 
 
-   static String oracleEval(String equation) throws Exception {
-      ScriptEngine nash = new ScriptEngineManager().getEngineByName("Nashorn");
-      String strResult = String.valueOf(nash.eval(equation));
-      return strResult;
-   }
-   
 
 
 

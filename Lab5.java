@@ -9,14 +9,14 @@ public class Lab5 {
       int amount = 0;
       String equationEval = "";
       String equationMine = "";
-      
+      boolean flagValidEquation = true; // to get close to 50/50 valid equations and invalid equations
       long evalTime = 0;
       long myTime = 0;
       long generateTime = 0;
       
       int correct = 0;
       
-      
+      // get user input for amount of equations
       Scanner sc = new Scanner(System.in);
       boolean validInput = false;
       while (validInput == false) {
@@ -35,17 +35,27 @@ public class Lab5 {
       System.out.println();
       
       
+      
+      //generate equation, solve with my calculator, solve with javascript eval, print results, show feedback
       for (int i = 0; i < amount; i++) {
+         String[] equations = {"", ""};
          long startTimeGen = System.currentTimeMillis();
-         String[] equations = generateValid();
+         if (flagValidEquation) {      // if true then equation valid. if false then equation not valid
+            equations = generateValid();
+         } else {
+            equations = generateInvalid();
+         }
          long endTimeGen = System.currentTimeMillis();
          long durationGen = (endTimeGen - startTimeGen);  //milliseconds
          generateTime += durationGen; // adding the time it took to do my calculator for a total time
          
-         equationEval = equations[0];
-         equationMine = "0 + " + equations[1];
+         //flip flag
+         flagValidEquation = !flagValidEquation;
          
-         // make string with no spaces. that uses the conventions of cos,sin,tan and not the one that is generated with Math.XXX()
+         equationEval = equations[0];
+         equationMine = "0 + " + equations[1]; // "0 + " to ensure equations that start with - work (just how i wrote my calculator)
+         
+         // makes string with no spaces. that uses the conventions of cos,sin,tan and not equationEval, generated with Math.XXX(), so hard to read
          String equationToPrint = equations[1].replaceAll("\\s", "");
 //          System.out.println("equation eval: " + equationEval);
 //          System.out.println("equation mine: " + equationMine);
@@ -94,7 +104,7 @@ public class Lab5 {
        System.out.println();
        
        double percent = (100 * ((double)correct / (double)amount));
-       System.out.println("Amount of expressions: " + amount + ". Amount of my caclulator correct: " + correct + ". Percent that my eval agreed with the Oracle: " + percent + "%");
+       System.out.println("Amount of expressions: " + amount + " Amount of my caclulator correct: " + correct + ". Percent that my eval agreed with the Oracle: " + percent + "%");
        
        System.out.println();
        System.out.println("Time for my calculator: " + myTime + " (milliseconds)");
@@ -108,6 +118,7 @@ public class Lab5 {
 
    public static String[] generateValid() {
         // #, +, -, *, /, fun, ({, }), ^, =
+        // starting point
         int randOp = (int) (Math.random() * (4));
         switch(randOp){
             case 0: // #
@@ -149,8 +160,6 @@ public class Lab5 {
                 
                 // get next operator
                 randOp =  (int) (Math.random() * (7));
-                
-                
                 switch(randOp){
                   case 0: // =
                      randOp = 9;
@@ -413,7 +422,7 @@ public class Lab5 {
                         break;
                      } 
                   case 6: // =
-                     if (balance == 0) {
+                     if (balance == 0 && (eq[0].length() > 0)) {
                         randOp = 9;
                      }
                      break;
@@ -487,6 +496,442 @@ public class Lab5 {
         
         return eq;       
     }
+    
+    
+    
+    public static String[] generateInvalid() {
+        // #, +, -, *, /, fun, (, ), ^, =
+        //starting point
+        int randOp = (int) (Math.random() * (7));
+        switch(randOp){
+            case 0: // #
+               randOp = 0;
+               break;
+            case 1: // -
+               randOp = 2;
+               break;
+            case 2: // fun
+               randOp = 5;
+               break;
+            case 3: // (
+               randOp = 6;
+               break;
+            case 4: // *
+               randOp = 3;
+               break;
+            case 5: // /
+               randOp = 4;
+               break;
+            case 6: // )
+               randOp = 7;
+               break;
+        }
+        
+        int randNum = (int) (Math.random() * (9) + 1);
+        boolean run = true;
+        String[] eq = {"", ""};
+        boolean firstDigit = true;
+        int balance = 0;
+        
+        //eq[0] = ;  // for eval()
+        //eq[1] = ;  // for mine
+        
+        while (run)
+        {
+            if (randOp == 0)
+            {
+                // #  can go = , # , - , + , * , /
+                // wrong options: fun
+                eq[0] = eq[0] + randNum;
+                eq[1] = eq[1] + randNum;
+                
+                randNum = (int) (Math.random() * (10));
+                if (firstDigit == true && randNum == 0) {
+                    randNum++;
+                }
+                firstDigit = false;
+                
+                // get next operator
+                randOp =  (int) (Math.random() * (8));
+                switch(randOp){
+                  case 0: // =
+                     randOp = 9;
+                     break;
+                  case 1: // #
+                     randOp = 0;
+                     break;
+                  case 2: // -
+                     eq[0] = eq[0] + " ";
+                     eq[1] = eq[1] + " ";
+                     randOp = 2;
+                     break;
+                  case 3: // +
+                     eq[0] = eq[0] + " ";
+                     eq[1] = eq[1] + " ";
+                     randOp = 1;
+                     break;
+                  case 4: // *
+                     eq[0] = eq[0] + " ";
+                     eq[1] = eq[1] + " ";
+                     randOp = 3;
+                     break;
+                  case 5: // /
+                     eq[0] = eq[0] + " ";
+                     eq[1] = eq[1] + " ";
+                     randOp = 4;
+                     break;
+                  case 6: // fun
+                     eq[0] = eq[0] + " ";
+                     eq[1] = eq[1] + " ";
+                     randOp = 5;
+                     break;
+                  case 7: // ) or try number again
+                     if (balance < 0) {
+                        eq[0] = eq[0] + " ";
+                        eq[1] = eq[1] + " ";
+                        randOp = 7;
+                     } else {
+                        randOp = 0;
+                     }
+                     break;
+                }
+
+            }
+            
+            else if (randOp == 1)
+            {
+                // +  can go # , - , fun , ( , ^
+                // wrong options: + , )
+                eq[0] = eq[0] + "+ ";
+                eq[1] = eq[1] + "+ ";
+                
+                // get next operator
+                randOp =  (int) (Math.random() * (7));
+                switch(randOp){
+                  case 0: // #
+                     randOp = 0;
+                     break;
+                  case 1: // -
+                     randOp = 2;
+                     break;
+                  case 2: // fun
+                     randOp = 5;
+                     break;
+                  case 3: // (
+                     randOp = 6;
+                     break;
+                  case 4: // ^
+                     randOp = 8;
+                     break;
+                  case 5: // +
+                     randOp = 1;
+                     break;
+                  case 6: // )
+                     randOp = 7;
+                     break;
+                }
+            }
+            
+            else if (randOp == 2)
+            {
+                // -  can go # , + , - , fun , ( , ^
+                // wrong options: ) , /
+                eq[0] = eq[0] + "- ";
+                eq[1] = eq[1] + "- ";
+                
+                // get next operator
+                randOp =  (int) (Math.random() * (8));
+                switch(randOp){
+                  case 0: // #
+                     randOp = 0;
+                     break;
+                  case 1: // +
+                     randOp = 1;
+                     break;
+                  case 2: // -
+                     randOp = 2;
+                     break;
+                  case 3: // fun
+                     randOp = 5;
+                     break;
+                  case 4: // (
+                     randOp = 6;
+                     break;
+                  case 5: // ^
+                     randOp = 8;
+                     break;
+                  case 6: // )
+                     randOp = 7;
+                     break;
+                  case 7: // /
+                     randOp = 4;
+                     break;
+                }
+            }
+            
+            else if (randOp == 3)
+            {
+                // *  can go # , - , fun , ( , ^
+                // wrong options: / , )
+                eq[0] = eq[0] + "* ";
+                eq[1] = eq[1] + "* ";
+                
+                // get next operator
+                randOp =  (int) (Math.random() * (7));
+                switch(randOp){
+                  case 0: // #
+                     randOp = 0;
+                     break;
+                  case 1: // -
+                     randOp = 2;
+                     break;
+                  case 2: // fun
+                     randOp = 5;
+                     break;
+                  case 3: // (
+                     randOp = 6;
+                     break;
+                  case 4: // ^
+                     randOp = 8;
+                     break;
+                  case 5: // /
+                     randOp = 4;
+                     break;
+                  case 6: // )
+                     randOp = 7;
+                     break;
+                }
+            }
+            
+            else if (randOp == 4)
+            {
+                // divide  can go # , - , fun , ( , ^
+                // wrong options: * , ) , +
+                eq[0] = eq[0] + "/ ";
+                eq[1] = eq[1] + "/ ";
+                
+                // get next operator
+                randOp =  (int) (Math.random() * (8));
+                switch(randOp){
+                  case 0: // #
+                     randOp = 0;
+                     break;
+                  case 1: // -
+                     randOp = 2;
+                     break;
+                  case 2: // fun
+                     randOp = 5;
+                     break;
+                  case 3: // (
+                     randOp = 6;
+                     break;
+                  case 4: // ^
+                     randOp = 8;
+                     break;
+                  case 5: // *
+                     randOp = 3;
+                     break;
+                  case 6: // )
+                     randOp = 7;
+                     break;
+                  case 7: // +
+                     randOp = 1;
+                     break;
+                }
+            }
+            
+            else if (randOp == 5)
+            {
+                // functions with a (
+                balance--;
+                
+                // 6 functions
+                int ranFun = (int) (Math.random() * (4));
+                String functionString0 = "";
+                String functionString1 = "";
+                
+                // eq[0] = equationEval
+                // eq[1] = equationMine
+                if (ranFun == 0) {
+                   // cos(
+                   functionString1 = "cos( ";
+                   // Math.cos(
+                   functionString0 = "Math.cos(";
+                } else if (ranFun == 1) {
+                   // sin(
+                   functionString1 = "sin( ";
+                   // Math.sin(
+                   functionString0 = "Math.sin(";
+                } else if (ranFun == 2) {
+                   // tan(
+                   functionString1 = "tan( ";
+                   // Math.tan(
+                   functionString0 = "Math.tan(";
+                } else if (ranFun == 3) {
+                   // log(
+                   functionString1 = "log( ";
+                   // Math.log(
+                   functionString0 = "Math.log(";
+                }
+
+                eq[0] = eq[0] + functionString0;
+                eq[1] = eq[1] + functionString1;
+                
+                // fun can go # , - , fun
+                // get next operator
+                randOp = (int) (Math.random() * (3));
+                switch(randOp){
+                  case 0: // #
+                     randOp = 0;
+                     break;
+                  case 1: // -
+                     randOp = 2;
+                     break;
+                  case 2: // fun
+                     randOp = 5;
+                     break;
+                }
+            }
+            
+            else if (randOp == 6)
+            {
+               balance--;
+               // ( or { can go # , - , fun
+               
+                eq[0] = eq[0] + "( ";
+                eq[1] = eq[1] + "( ";
+                
+                // get next operator
+                randOp =  (int) (Math.random() * (3));
+                switch(randOp){
+                  case 0: // #
+                     randOp = 0;
+                     break;
+                  case 1: // -
+                     randOp = 2;
+                     break;
+                  case 2: // fun
+                     randOp = 5;
+                     break;
+                }
+            }
+            
+            else if (randOp == 7)
+            {
+               // if a ) can be added only
+               if (balance < 0)
+               {
+                  eq[0] = eq[0] + ") ";
+                  eq[1] = eq[1] + ") ";
+                  ++balance;
+               }
+               
+               // 1 in 25 chance that it adds a ) no matter if needed or not
+               int changePara =  (int) (Math.random() * (25));
+               if (changePara == 0) {
+                  eq[0] = eq[0] + ") ";
+                  eq[1] = eq[1] + ") ";
+                  ++balance;
+               }
+               
+               // ) or } can go - , + , * , /  , ) , =
+                // get next operator
+                randOp =  (int) (Math.random() * (6));
+                switch(randOp){
+                  case 0: // -
+                     randOp = 2;
+                     break;
+                  case 1: // +
+                     randOp = 1;
+                     break;
+                  case 2: // *
+                     randOp = 3;
+                     break;
+                  case 3: // /
+                     randOp = 4;
+                     break;
+                  case 5: // )
+                     if (balance < 0)
+                     {
+                        randOp = 7;
+                        break;
+                     } 
+                  case 6: // =
+                     if (balance == 0 && (eq[0].length() > 0)) {
+                        randOp = 9;
+                     }
+                     break;
+                }
+            }
+            
+            else if (randOp == 8)
+            {
+         		int randX = (int)(Math.random() *101 + 1) - 21;
+               int randY = (int)(Math.random() *21 + 1) - 11;
+               
+               // ^ can go + , - , * , /
+                eq[1] = eq[1] + randX + " ^ ( " + randY + " ) ";
+                eq[0] = eq[0] + " Math.pow( " + randX + ", " + randY + " ) ";
+                
+                // get next operator
+                randOp =  (int) (Math.random() * (4));
+                
+                switch(randOp){
+                  case 0: // +
+                     randOp = 1;
+                     break;
+                  case 1: // -
+                     randOp = 2;
+                     break;
+                  case 2: // *
+                     randOp = 3;
+                     break;
+                  case 3: // /
+                     randOp = 4;
+                     break;
+                }
+            }
+            
+            else if (randOp == 9)
+            {
+               // =
+               // END
+                run = false;
+            }
+        }
+        
+        while (balance < 0) {
+            eq[0] = eq[0] + " )";
+            eq[1] = eq[1] + " )";
+            ++balance;
+        }
+        //
+        
+        //if the first char is a space then remove it
+        if (eq[0].charAt(0) == ' ')
+        {
+            eq[0] = eq[0].substring(1, eq[0].length());
+        }
+        if (eq[1].charAt(0) == ' ')
+        {
+            eq[1] = eq[1].substring(1, eq[1].length());
+        }
+        //if the last char is a space then remove it
+        if (eq[0].charAt(eq[0].length() - 1) == ' ')
+        {
+            eq[0] = eq[0].substring(0, eq[0].length() - 1);
+        }
+        if (eq[1].charAt(eq[1].length() - 1) == ' ')
+        {
+            eq[1] = eq[1].substring(0, eq[1].length() - 1);
+        }
+        
+        //System.out.println("eq[0] " + eq[0]);
+        //System.out.println("eq[1] " + eq[1]);
+        
+        return eq;       
+    }
+
 
 
 
